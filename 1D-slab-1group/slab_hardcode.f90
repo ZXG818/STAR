@@ -2,7 +2,7 @@
 !
 !  FUNCTIONS:
 !  slab - Entry point of console application.
-!
+!  a hard code version
 
 !****************************************************************************
 !
