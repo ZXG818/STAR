@@ -1,0 +1,4 @@
+mesh : 300x300
+convergence criteria : 1E-6
+final keff = 1.33216
+reference keff = 1.33342 (minus or plus 0.00004)
