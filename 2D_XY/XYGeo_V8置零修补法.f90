@@ -320,12 +320,30 @@
                 mesh_group(g,k,i,j-1)%flux = 2.d0*mesh_group(g,k,i,j)%flux - mesh_group(g,k,i,j+1)%flux
                 if(mesh_group(g,k,i,j-1)%flux .LT. 0.d0) then
                   mesh_group(g,k,i,j-1)%flux = 0.d0
+                  ! re-calculate the node angular flux, promise the neutron conservation.
+                  dx = mesh_group(g,k,i+1,j)%x - mesh_group(g,k,i-1,j)%x
+                  dy = mesh_group(g,k,i,j+1)%y - mesh_group(g,k,i,j-1)%y
+                  nume = mesh_group(g,k,i,j)%total_source*dx*dy            &
+                        -2.d0*angular(k)%mu*mesh_group(g,k,i+1,j)%flux*dy  &
+                        -angular(k)%eta*mesh_group(g,k,i,j+1)%flux*dx
+                  deno = mesh_group(g,k,i,j)%sigma_t*dx*dy   &
+                        -2.d0*angular(k)%mu*dy
+                  mesh_group(g,k,i,j)%flux = nume / deno
                 endif
               else
                 ! exterpolate the flux, diamond difference
                 mesh_group(g,k,i,j)%flux = 2.d0*mesh_group(g,k,i+1,j)%flux - mesh_group(g,k,i+2,j)%flux
                 if(mesh_group(g,k,i,j)%flux .LT. 0.d0) then
                   mesh_group(g,k,i,j)%flux = 0.d0
+                  ! re-calculate the node angular flux, promise the neutron conservation.
+                  dx = mesh_group(g,k,i+2,j)%x - mesh_group(g,k,i,j)%x
+                  dy = mesh_group(g,k,i,j+1)%y - mesh_group(g,k,i,j-1)%y
+                  nume = mesh_group(g,k,i+1,j)%total_source*dx*dy             &
+                        -angular(k)%mu*mesh_group(g,k,i+2,j)%flux*dy          &
+                        -2.d0*angular(k)%eta*mesh_group(g,k,i+1,j+1)%flux*dx
+                  deno = mesh_group(g,k,i+1,j)%sigma_t*dx*dy    &
+                        -2.d0*angular(k)%eta*dx
+                  mesh_group(g,k,i+1,j)%flux = nume / deno
                 endif
               endif
             endif
@@ -387,12 +405,30 @@
                 mesh_group(g,k,i,j-1)%flux = 2.d0*mesh_group(g,k,i,j)%flux - mesh_group(g,k,i,j+1)%flux
                 if(mesh_group(g,k,i,j-1)%flux .LT. 0.d0)then
                   mesh_group(g,k,i,j-1)%flux = 0.d0
+                  ! re-calculate the node angular flux, promise the neutron conservation.
+                  dx = mesh_group(g,k,i+1,j)%x - mesh_group(g,k,i-1,j)%x
+                  dy = mesh_group(g,k,i,j+1)%y - mesh_group(g,k,i,j-1)%y
+                  nume = mesh_group(g,k,i,j)%total_source*dx*dy             &
+                        +2.d0*angular(k)%mu*mesh_group(g,k,i-1,j)%flux*dy   &
+                        -angular(k)%eta*mesh_group(g,k,i,j+1)%flux*dx
+                  deno = mesh_group(g,k,i,j)%sigma_t*dx*dy    &
+                        +2.d0*angular(k)%mu*dy
+                  mesh_group(g,k,i,j)%flux = nume / deno
                 endif
               else
                 ! exterpolate the flux, diamond difference
                 mesh_group(g,k,i,j)%flux = 2.d0*mesh_group(g,k,i-1,j)%flux - mesh_group(g,k,i-2,j)%flux
                 if(mesh_group(g,k,i,j)%flux .LT. 0.d0)then
                   mesh_group(g,k,i,j)%flux= 0.d0
+                  ! re-calculate the node angular flux, promise the neutron conservation.
+                  dx = mesh_group(g,k,i,j)%x - mesh_group(g,k,i-2,j)%x
+                  dy = mesh_group(g,k,i,j+1)%y - mesh_group(g,k,i,j-1)%y
+                  nume = mesh_group(g,k,i-1,j)%total_source*dx*dy           &
+                        +angular(k)%mu*mesh_group(g,k,i-2,j)%flux*dy        &
+                        -2.d0*angular(k)%eta*mesh_group(g,k,i-1,j+1)%flux*dx
+                  deno = mesh_group(g,k,i-1,j)%sigma_t*dx*dy   &
+                        -2.d0*angular(k)%eta*dx
+                  mesh_group(g,k,i-1,j)%flux = nume / deno
                 endif
               endif
             endif
@@ -454,11 +490,29 @@
                 mesh_group(g,k,i,j+1)%flux = 2.d0*mesh_group(g,k,i,j)%flux - mesh_group(g,k,i,j-1)%flux
                 if(mesh_group(g,k,i,j+1)%flux .LT. 0.d0)then
                   mesh_group(g,k,i,j+1)%flux = 0.d0
+                  ! re-calculate the node angular flux, promise the neutron conservation.
+                  dx = mesh_group(g,k,i+1,j)%x - mesh_group(g,k,i-1,j)%x
+                  dy = mesh_group(g,k,i,j+1)%y - mesh_group(g,k,i,j-1)%y
+                  nume = mesh_group(g,k,i,j)%total_source*dx*dy             &
+                        -2.d0*angular(k)%mu*mesh_group(g,k,i+1,j)%flux*dy   &
+                        +angular(k)%eta*mesh_group(g,k,i,j-1)%flux*dx 
+                  deno = mesh_group(g,k,i,j)%sigma_t*dx*dy   &
+                        -2.d0*angular(k)%mu*dy
+                  mesh_group(g,k,i,j)%flux = nume / deno
                 endif
               else
                 mesh_group(g,k,i,j)%flux = 2.d0*mesh_group(g,k,i+1,j)%flux - mesh_group(g,k,i+2,j)%flux
                 if(mesh_group(g,k,i,j)%flux .LT. 0.d0)then
                   mesh_group(g,k,i,j)%flux = 0.d0
+                  ! re-calculate the node angular flux, promise the neutron conservation.
+                  dx = mesh_group(g,k,i+2,j)%x - mesh_group(g,k,i,j)%x
+                  dy = mesh_group(g,k,i,j+1)%y - mesh_group(g,k,i,j-1)%y
+                  nume = mesh_group(g,k,i+1,j)%total_source*dx*dy          &
+                       -angular(k)%mu*mesh_group(g,k,i+2,j)%flux*dy        &
+                       +2.d0*angular(k)%eta*mesh_group(g,k,i+1,j-1)%flux*dx
+                  deno = mesh_group(g,k,i+1,j)%sigma_t*dx*dy     &
+                        +2.d0*angular(k)%eta*dx
+                  mesh_group(g,k,i+1,j)%flux = nume / deno
                 endif
               endif
             endif          
@@ -520,11 +574,30 @@
                 mesh_group(g,k,i,j+1)%flux = 2.d0*mesh_group(g,k,i,j)%flux - mesh_group(g,k,i,j-1)%flux
                 if(mesh_group(g,k,i,j+1)%flux .LT. 0.d0)then
                   mesh_group(g,k,i,j+1)%flux = 0.d0
+                  ! re-calculate the node angular flux, promise the neutron conversation.
+                  mesh_group(g,k,i,j+1)%flux = 0.d0
+                  dx = mesh_group(g,k,i+1,j)%x - mesh_group(g,k,i-1,j)%x
+                  dy = mesh_group(g,k,i,j+1)%y - mesh_group(g,k,i,j-1)%y
+                  nume = mesh_group(g,k,i,j)%total_source*dx*dy           &
+                        +2.d0*angular(k)%mu*mesh_group(g,k,i-1,j)%flux*dy &
+                        +angular(k)%eta*mesh_group(g,k,i,j-1)%flux*dx
+                  deno = mesh_group(g,k,i,j)%sigma_t*dx*dy  &
+                        +2.d0*angular(k)%mu*dy
+                  mesh_group(g,k,i,j)%flux = nume / deno
                 endif
               else
                 mesh_group(g,k,i,j)%flux = 2.d0*mesh_group(g,k,i-1,j)%flux - mesh_group(g,k,i-2,j)%flux
                 if(mesh_group(g,k,i,j)%flux .LT. 0.d0)then
                   mesh_group(g,k,i,j)%flux = 0.d0
+                  ! re-calculate the node angular flux, promise the neutron conversation.
+                  dx = mesh_group(g,k,i,j)%x - mesh_group(g,k,i-2,j)%x
+                  dy = mesh_group(g,k,i,j+1)%y - mesh_group(g,k,i,j-1)%y
+                  nume = mesh_group(g,k,i-1,j)%total_source*dx*dy           &
+                        +angular(k)%mu*mesh_group(g,k,i-2,j)%flux*dy        &
+                        +2.d0*angular(k)%eta*mesh_group(g,k,i-1,j-1)%flux*dx
+                  deno = mesh_group(g,k,i-1,j)%sigma_t*dx*dy     &
+                        +2.d0*angular(k)%eta*dx
+                  mesh_group(g,k,i-1,j)%flux = nume / deno
                 endif
               endif
             endif
